@@ -11,7 +11,7 @@ import BagPage from '@/presentation/pages/bag-page';
 import CheckoutPage from '@/presentation/pages/checkout-page';
 import WishlistPage from '@/presentation/pages/wishlist-page';
 import LoginPage from '@/presentation/pages/login-page';
-import NotFound from '@/pages/not-found';
+import NotFound from '@/presentation/pages/not-found';
 
 function Router() {
   return (

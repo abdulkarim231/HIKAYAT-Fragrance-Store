@@ -49,6 +49,9 @@ The storefront runs on Next.js App Router. The existing visual components and cl
 
 ## Architecture decisions
 
+- Database access must use one shared server-only helper at `lib/db.ts`, with the reusable client/connection cached globally for Vercel. Keep `User`, `Product`, and `Order` definitions in `models/`.
+- Orders must reference a user and contain items with product reference, quantity, and price snapshot; include total, status (`pending` or `paid`), and creation timestamp.
+- Provide a simple repeatable seed script or protected admin route for sample products; storefront products must come from the database.
 - The catalog reads `public.products` from Supabase through the Next.js API. Seeded sample products are allowed; never silently fall back to a hardcoded catalog if the database fails.
 - Supabase RLS permits reading published products only. Public roles cannot insert, update, or delete products.
 - Bag, wishlist, and locale remain device-local; signing in does not imply that they synchronize between devices.
