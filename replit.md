@@ -17,12 +17,12 @@ A bilingual English/Arabic fragrance storefront for discovering perfumes and man
 
 - Framework: Next.js App Router with TypeScript.
 - Styling: Tailwind CSS.
-- Database: MongoDB Atlas using Mongoose.
+- Database: Supabase only. The user's latest “use only supabase” instruction supersedes the earlier MongoDB Atlas/Mongoose requirement.
 - Passwords: bcryptjs; hash before saving.
 - Login sessions: JWT stored in an httpOnly cookie.
 - Payments (Day 5): Stripe, test mode only.
 - Deployment (Day 5): Vercel, from GitHub.
-- Do not use Replit's built-in database, PostgreSQL, SQLite, or any other database.
+- Do not use Replit's built-in database, MongoDB, SQLite, or a second database. Supabase's managed PostgreSQL is explicitly allowed by the latest instruction.
 - Do not use Replit Auth or any third-party login service.
 - Do not add a separate Express server; use Next.js API routes in `app/api/...`.
 - Do not switch frameworks or add large libraries without asking first.
@@ -34,7 +34,7 @@ The storefront currently uses React/Vite. Migration to the required stack has no
 ## Secrets and security — always
 
 - All secrets live in Replit Secrets as environment variables. Never write a key, password, or connection string in code.
-- Required now: `MONGODB_URI` (MongoDB Atlas connection string) and `JWT_SECRET` (a long random string).
+- MongoDB connection settings are no longer required. Supabase connection settings must be configured securely before connecting the storefront. `JWT_SECRET` will be needed if custom JWT login is implemented.
 - Required on Day 5: `STRIPE_SECRET_KEY`; bonus webhook integration: `STRIPE_WEBHOOK_SECRET`.
 - Use secrets only on the server in API routes and server code, never in client components.
 - Never store plain passwords; always hash with bcryptjs.
