@@ -8,23 +8,44 @@ A bilingual English/Arabic fragrance storefront for discovering perfumes and man
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - `pnpm --filter @workspace/hikayat run dev` — storefront, through its managed workflow
 - The first storefront uses a sample catalog and browser persistence; it does not require database credentials.
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+### Required stack — user instruction
+
+- Framework: Next.js App Router with TypeScript.
+- Styling: Tailwind CSS.
+- Database: MongoDB Atlas using Mongoose.
+- Passwords: bcryptjs; hash before saving.
+- Login sessions: JWT stored in an httpOnly cookie.
+- Payments (Day 5): Stripe, test mode only.
+- Deployment (Day 5): Vercel, from GitHub.
+- Do not use Replit's built-in database, PostgreSQL, SQLite, or any other database.
+- Do not use Replit Auth or any third-party login service.
+- Do not add a separate Express server; use Next.js API routes in `app/api/...`.
+- Do not switch frameworks or add large libraries without asking first.
+
+### Current implementation
+
+The storefront currently uses React/Vite. Migration to the required stack has not been performed. Existing Express and database packages are unused scaffolding, not the approved stack for new work.
+
+## Secrets and security — always
+
+- All secrets live in Replit Secrets as environment variables. Never write a key, password, or connection string in code.
+- Required now: `MONGODB_URI` (MongoDB Atlas connection string) and `JWT_SECRET` (a long random string).
+- Required on Day 5: `STRIPE_SECRET_KEY`; bonus webhook integration: `STRIPE_WEBHOOK_SECRET`.
+- Use secrets only on the server in API routes and server code, never in client components.
+- Never store plain passwords; always hash with bcryptjs.
+- Never return password hashes in API responses.
+- Keep `.env*` excluded in `.gitignore`.
+- If a required secret is missing, stop and tell the user exactly which secret to add in Replit Secrets and where to get it.
 
 ## Where things live
 
 - `artifacts/hikayat/` — storefront and its architecture documentation.
-- `artifacts/api-server/` — shared API scaffold, reserved for future real commerce integrations.
+- `artifacts/api-server/` — unused API scaffold; do not extend it for HIKAYAT.
 - `lib/` — shared workspace libraries.
 
 ## Architecture decisions
@@ -39,6 +60,7 @@ Luxury perfume discovery, category filtering, search, quick view, wishlist, and 
 
 ## User preferences
 
+- Keep the design consistent across all screens.
 - The user explicitly requests clean architecture.
 - Brand: HIKAYAT. Tagline: “Every Scent Tells a Story.”
 - Deep Olive `#263A32` is the only primary color. Supporting colors are Warm Ivory `#F4EFE6`, Champagne Gold `#B89B72`, and Soft Sage `#A9B7A8`.
