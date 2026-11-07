@@ -1,5 +1,5 @@
 /** Resolves public assets against the deployment base path. */
 export function assetUrl(path: string): string {
-  const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+  const base = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/`;
   return `${base}${path.replace(/^\//, '')}`;
 }

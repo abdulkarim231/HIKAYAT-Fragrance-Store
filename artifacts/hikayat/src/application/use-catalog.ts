@@ -1,16 +1,23 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { demoProductRepository, type ProductRepository } from '@/infrastructure/product-repository';
+import { productRepository, type ProductRepository } from '@/infrastructure/product-repository';
 import { queryCatalog, type CatalogQuery } from '@/domain/catalog';
 import { resolveLines, savings, subtotal } from '@/domain/cart';
 import { useLocale } from './locale-provider';
 import { useCart } from './cart-provider';
 
-const repo: ProductRepository = demoProductRepository;
+const repo: ProductRepository = productRepository;
 export const productsQueryKey = ['products'] as const;
 
 export function useProducts() {
-  return useQuery({ queryKey: productsQueryKey, queryFn: () => repo.list(), staleTime: Infinity });
+  return useQuery({
+    queryKey: productsQueryKey,
+    queryFn: () => repo.list(),
+    staleTime: 60_000,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    refetchInterval: 60_000,
+  });
 }
 
 export function useCatalog(query: CatalogQuery) {

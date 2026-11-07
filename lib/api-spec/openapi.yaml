@@ -11,6 +11,70 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      responses:
+        "200":
+          description: Validated current session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthState"
+  /auth/signup:
+    post:
+      operationId: signUp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthCredentials"
+      responses:
+        "200":
+          description: Account created or confirmation requested
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResult"
+        "400":
+          description: Signup failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthError"
+  /auth/login:
+    post:
+      operationId: signIn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthCredentials"
+      responses:
+        "200":
+          description: Signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResult"
+        "400":
+          description: Invalid credentials or unconfirmed email
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthError"
+  /auth/logout:
+    post:
+      operationId: signOut
+      responses:
+        "200":
+          description: Signed out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthState"
   /healthz:
     get:
       operationId: healthCheck
@@ -26,6 +90,43 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    AuthUser:
+      type: object
+      required: [id, email]
+      properties:
+        id: { type: string }
+        email: { type: string }
+    AuthState:
+      type: object
+      required: [user]
+      properties:
+        user:
+          oneOf:
+            - $ref: "#/components/schemas/AuthUser"
+            - type: "null"
+    AuthResult:
+      type: object
+      required: [user, authenticated, requiresConfirmation]
+      properties:
+        user:
+          oneOf:
+            - $ref: "#/components/schemas/AuthUser"
+            - type: "null"
+        authenticated: { type: boolean }
+        requiresConfirmation: { type: boolean }
+    AuthCredentials:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        password: { type: string, minLength: 1, maxLength: 128 }
+    AuthError:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          enum: [invalid_credentials, email_not_confirmed, weak_password, invalid_input, rate_limited, auth_unavailable, signup_failed, forbidden]
     HealthStatus:
       type: object
       properties:

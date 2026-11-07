@@ -4,12 +4,11 @@ A bilingual English/Arabic fragrance storefront for discovering perfumes and man
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/hikayat run dev` — storefront, through its managed workflow
-- The first storefront uses a sample catalog and browser persistence; it does not require database credentials.
+- Storefront server requires `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` in Replit Secrets.
 
 ## Stack
 
@@ -18,26 +17,26 @@ A bilingual English/Arabic fragrance storefront for discovering perfumes and man
 - Framework: Next.js App Router with TypeScript.
 - Styling: Tailwind CSS.
 - Database: Supabase only. The user's latest “use only supabase” instruction supersedes the earlier MongoDB Atlas/Mongoose requirement.
-- Passwords: bcryptjs; hash before saving.
-- Login sessions: JWT stored in an httpOnly cookie.
+- Authentication: Supabase Auth. The user's explicit request to enable Supabase Auth supersedes the earlier custom bcryptjs/JWT login requirement.
+- Sessions: Supabase access and refresh tokens stored in server-set httpOnly cookies, never browser storage.
 - Payments (Day 5): Stripe, test mode only.
 - Deployment (Day 5): Vercel, from GitHub.
 - Do not use Replit's built-in database, MongoDB, SQLite, or a second database. Supabase's managed PostgreSQL is explicitly allowed by the latest instruction.
-- Do not use Replit Auth or any third-party login service.
+- Do not use Replit Auth or a separate login provider; use Supabase Auth.
 - Do not add a separate Express server; use Next.js API routes in `app/api/...`.
 - Do not switch frameworks or add large libraries without asking first.
 
 ### Current implementation
 
-The storefront currently uses React/Vite. Migration to the required stack has not been performed. Existing Express and database packages are unused scaffolding, not the approved stack for new work.
+The storefront runs on Next.js App Router. The existing visual components and client navigation are retained inside a client wrapper to preserve the design and device-local shopping preferences. Catalog and auth endpoints live in `src/app/api/`. Existing Express and database packages are unused scaffolding; do not extend them.
 
 ## Secrets and security — always
 
 - All secrets live in Replit Secrets as environment variables. Never write a key, password, or connection string in code.
-- MongoDB connection settings are no longer required. Supabase connection settings must be configured securely before connecting the storefront. `JWT_SECRET` will be needed if custom JWT login is implemented.
+- Required: `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`. MongoDB credentials and a custom `JWT_SECRET` are not required.
 - Required on Day 5: `STRIPE_SECRET_KEY`; bonus webhook integration: `STRIPE_WEBHOOK_SECRET`.
 - Use secrets only on the server in API routes and server code, never in client components.
-- Never store plain passwords; always hash with bcryptjs.
+- Supabase Auth handles password hashing. Do not store application passwords or implement a second password database.
 - Never return password hashes in API responses.
 - Keep `.env*` excluded in `.gitignore`.
 - If a required secret is missing, stop and tell the user exactly which secret to add in Replit Secrets and where to get it.
@@ -50,8 +49,10 @@ The storefront currently uses React/Vite. Migration to the required stack has no
 
 ## Architecture decisions
 
-- Start with a frontend catalog because the user explicitly permits realistic placeholder products until actual store data is supplied.
-- Do not claim payments, customer authentication, or order placement succeed without a connected service.
+- The catalog reads `public.products` from Supabase through the Next.js API. Seeded sample products are allowed; never silently fall back to a hardcoded catalog if the database fails.
+- Supabase RLS permits reading published products only. Public roles cannot insert, update, or delete products.
+- Bag, wishlist, and locale remain device-local; signing in does not imply that they synchronize between devices.
+- Do not claim payments or order placement succeed without a connected service. Supabase Auth signup may require email confirmation; never report it as a signed-in session until verified.
 - Keep the product domain, shopping operations, persistence adapters, and presentation separate so real store data can replace sample data without rewriting the interface.
 
 ## Product

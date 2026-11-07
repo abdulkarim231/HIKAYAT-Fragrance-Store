@@ -5,6 +5,7 @@ import { LocaleProvider } from './locale-provider';
 import { CartProvider } from './cart-provider';
 import { WishlistProvider } from './wishlist-provider';
 import { UIProvider } from './ui-provider';
+import { AuthProvider } from './auth-provider';
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } });
 
@@ -15,7 +16,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
         <CartProvider>
           <WishlistProvider>
             <UIProvider>
-              <TooltipProvider>{children}</TooltipProvider>
+              <AuthProvider>
+                <TooltipProvider>{children}</TooltipProvider>
+              </AuthProvider>
             </UIProvider>
           </WishlistProvider>
         </CartProvider>

@@ -39,7 +39,7 @@ function RoutedErrorBoundary({ children }: { children: ReactNode }) {
 function App() {
   return (
     <AppProviders>
-      <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+      <WouterRouter base={process.env.NEXT_PUBLIC_BASE_PATH ?? ''}>
         <Router />
       </WouterRouter>
       <Toaster />

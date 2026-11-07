@@ -15,24 +15,25 @@ A responsive English/Arabic perfume storefront built with React and TypeScript. 
 - Immediate notifications for shopping actions.
 - Browser persistence for the bag, wishlist, and language preference.
 - Delivery form validation and an on-screen checkout review.
+- Supabase Auth account creation, sign-in, and sign-out through server-side API routes.
+- Supabase-backed catalog with published-product read access and no public write permissions.
 - Loading, error, empty, and not-found states.
 - Reduced-motion support.
 
 ## Current status
 
-This is a **frontend-first demo storefront**, not a live commerce service.
+This storefront uses **Next.js and Supabase**, with sample product data. It is not yet a live payment or order-processing service.
 
-- Products and prices are sample data.
+- Products and prices are sample data stored in the Supabase `public.products` table.
 - Shopping preferences are stored in the current browser, not synchronized to an account.
-- The account dialog describes guest mode; customer authentication is not connected.
+- Customer authentication uses Supabase Auth. Email confirmation follows the project's Supabase settings.
 - Checkout does not transmit delivery details, accept payments, or place orders.
 - Order placement remains disabled until a real store and payment service are integrated.
-- The shared API and database packages are scaffolding and are not required by the current storefront.
+- The shared Express API and Replit database packages are unused scaffolding, not part of the storefront's backend.
 
 ## Technology
 
-- React and TypeScript
-- Vite
+- Next.js App Router, React, and TypeScript
 - Tailwind CSS
 - Wouter routing
 - TanStack React Query
@@ -59,13 +60,24 @@ Start the managed **`artifacts/hikayat: web`** workflow. It supplies the port an
 
 ### Run locally outside the managed workflow
 
-The Vite configuration requires `PORT` and `BASE_PATH`. On a POSIX shell:
+The application accepts `PORT` and `BASE_PATH`. On a POSIX shell:
 
 ```bash
 PORT=5173 BASE_PATH=/ pnpm --filter @workspace/hikayat run dev
 ```
 
-Open the address reported by Vite. No API keys or database credentials are needed for the demo storefront.
+Open the address reported by Next.js. Configure `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` in Replit Secrets, or in a private ignored `.env.local` for development outside Replit. Never commit credentials. Both settings are read only on the server; neither is included in client bundles.
+
+### Supabase setup
+
+- `public.products` holds catalog rows with `id`, localized product `data` (JSONB), and a `published` flag.
+- Row-level security permits public reads of published products only. There are no public write policies.
+- Schema migration files live in `artifacts/hikayat/supabase/migrations/`.
+- The existing 10 sample fragrances have been seeded without overwriting existing rows.
+- Use the Supabase dashboard to edit product data or add products. Product data must match `src/domain/product-schema.ts`.
+- Enable Email authentication in Supabase Auth. If email confirmation is enabled, configure allowed redirect URLs to include your application origin followed by `/api/auth/callback`.
+- Confirmation completes in the same browser that requested signup using a server-held PKCE verifier. A user who confirms on another device can return to the store and sign in after verification.
+- Session tokens live in httpOnly cookies with SameSite protections. Credentials and tokens are never returned to client JavaScript or stored in localStorage.
 
 ## Development commands
 
@@ -85,7 +97,7 @@ PORT=5173 BASE_PATH=/ pnpm --filter @workspace/hikayat run build
 PORT=5173 BASE_PATH=/ pnpm --filter @workspace/hikayat run serve
 ```
 
-The storefront build output is `artifacts/hikayat/dist/public/`. A static host must send application routes to `index.html` so direct visits to product and shop pages work.
+This is a server-backed Next.js application, not a static export. Production requires `next build` followed by `next start`, or a Next.js-compatible host such as Vercel. The same Supabase settings must be configured on the production host.
 
 ## Clean architecture
 
@@ -96,7 +108,8 @@ artifacts/hikayat/
 ├── public/images/       # Fragrance and editorial imagery
 ├── src/
 │   ├── domain/          # Product types and pure cart/catalog operations
-│   ├── infrastructure/  # Demo catalog, repository, storage and asset adapters
+│   ├── app/             # Next.js document, client entry point and API routes
+│   ├── infrastructure/  # Catalog, auth, persistence and server-only adapters
 │   ├── application/     # Providers and hooks coordinating shopping state
 │   ├── i18n/            # English and Arabic interface messages
 │   ├── presentation/    # Focused components, pages and interaction hooks
@@ -113,7 +126,7 @@ See [the architecture guide](artifacts/hikayat/ARCHITECTURE.md) for more detail.
 | Directory | Purpose |
 | --- | --- |
 | `artifacts/hikayat/` | HIKAYAT storefront |
-| `artifacts/api-server/` | Shared Express API scaffold |
+| `artifacts/api-server/` | Unused Express scaffold; storefront uses Next.js routes |
 | `artifacts/mockup-sandbox/` | Component preview sandbox |
 | `lib/` | Shared API contracts, generated clients, validation, and database libraries |
 | `scripts/` | Workspace utility scripts |
@@ -136,13 +149,13 @@ See [the architecture guide](artifacts/hikayat/ARCHITECTURE.md) for more detail.
 
 ### Catalog
 
-Edit the sample products in `artifacts/hikayat/src/infrastructure/demo-products.ts`.
+Edit products in Supabase's `public.products` table. The original `demo-products.ts` is retained as seed reference only and is not imported by the runtime catalog repository.
 
-To connect real store data, implement the `ProductRepository` interface and replace the demo repository used by `artifacts/hikayat/src/application/use-catalog.ts`. Real checkout, inventory, account synchronization, and server-side price validation require additional integration work.
+The `ProductRepository` fetches `/api/catalog`; its server adapter reads and validates Supabase product data. Database errors produce a retryable UI state, not a hardcoded fallback. Real checkout, inventory, account synchronization, and server-side price validation still require additional integration work.
 
 ### Languages
 
-Interface translations live in `artifacts/hikayat/src/i18n/messages.ts`. Product names, descriptions, and notes use localized fields in the catalog.
+Interface translations live in `artifacts/hikayat/src/i18n/messages.ts`. Product names, descriptions, and notes use localized fields in Supabase product data.
 
 Keep English and Arabic messages aligned when adding new features.
 
@@ -161,4 +174,4 @@ English display typography uses Kedebideri, with DM Sans for body text. Arabic u
 
 ## Before accepting real orders
 
-Connect an actual product and inventory source, customer authentication if needed, and a secure server-backed checkout/payment service. Validate prices and availability on the server, configure shipping and store policies, and verify the complete purchase flow before enabling order placement.
+Connect a secure server-backed checkout/payment service and inventory handling. Validate prices and availability on the server, configure shipping and store policies, verify Supabase email confirmation redirect settings, and verify the complete purchase flow before enabling order placement.
