@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "HIKAYAT — Every Scent Tells a Story"
+description = "A premium bilingual English and Arabic perfume storefront with fragrance discovery, filtering, wishlist, quick view, and a persistent shopping bag."
+version = "1.0.0"
+id = "artifacts/hikayat"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24371
+
+[services.development]
+run = "pnpm --filter @workspace/hikayat run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/hikayat", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/hikayat/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24371"
+BASE_PATH = "/"

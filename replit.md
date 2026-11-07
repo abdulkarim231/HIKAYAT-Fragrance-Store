@@ -1,6 +1,6 @@
-# [Project name]
+# HIKAYAT
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A bilingual English/Arabic fragrance storefront for discovering perfumes and managing a shopping bag.
 
 ## Run & Operate
 
@@ -9,7 +9,8 @@ _Replace the heading above with the project's name, and this line with one sente
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm --filter @workspace/hikayat run dev` — storefront, through its managed workflow
+- The first storefront uses a sample catalog and browser persistence; it does not require database credentials.
 
 ## Stack
 
@@ -22,23 +23,33 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/hikayat/` — storefront and its architecture documentation.
+- `artifacts/api-server/` — shared API scaffold, reserved for future real commerce integrations.
+- `lib/` — shared workspace libraries.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Start with a frontend catalog because the user explicitly permits realistic placeholder products until actual store data is supplied.
+- Do not claim payments, customer authentication, or order placement succeed without a connected service.
+- Keep the product domain, shopping operations, persistence adapters, and presentation separate so real store data can replace sample data without rewriting the interface.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Luxury perfume discovery, category filtering, search, quick view, wishlist, and a persistent shopping bag with English/LTR and Arabic/RTL support.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- The user explicitly requests clean architecture.
+- Brand: HIKAYAT. Tagline: “Every Scent Tells a Story.”
+- Deep Olive `#263A32` is the only primary color. Supporting colors are Warm Ivory `#F4EFE6`, Champagne Gold `#B89B72`, and Soft Sage `#A9B7A8`.
+- Use Kedebideri for the English logo and display headings, with readable sans-serif body text.
+- The audience is young adults aged 18–35; the experience should feel premium, calm, elegant, and youthful.
+- All shopping interactions must provide meaningful feedback; avoid decorative controls that do nothing.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Run artifact services using their managed workflows so routing and environment variables are supplied.
+- Do not fabricate product reviews, payment success, or authentication.
 
 ## Pointers
 

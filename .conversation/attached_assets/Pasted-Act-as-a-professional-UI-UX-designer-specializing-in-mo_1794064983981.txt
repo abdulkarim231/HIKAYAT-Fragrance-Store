@@ -1,0 +1,164 @@
+Act as a professional UI/UX designer specializing in modern luxury e-commerce websites.
+
+Design a complete, responsive perfume shopping website for a fragrance brand named HIKAYAT .
+
+The website should deliver a premium, elegant, calm, and youthful shopping experience.
+Brand Name: HIKAYAT 
+
+Tagline: "Every Scent Tells a Story."
+
+Target Audience: Young adults aged 18–35.
+
+Brand Personality:
+- Modern Luxury
+- Calm and Elegant
+- Minimalist
+- Youthful and Sophisticated
+- Premium and Approachable
+Use ONE primary brand color:
+- Primary: Deep Olive #263A32
+Supporting colors:
+- Warm Ivory #F4EFE6
+- Champagne Gold #B89B72
+- Soft Sage #A9B7A8
+Deep Olive must remain the only primary brand color.
+
+Use Warm Ivory for backgrounds, Charcoal for text, Champagne Gold for subtle luxury details, and Soft Sage for secondary elements.
+Use Kedebideri as the main English display font for the HIKAYAT logo and main headings.
+
+Use a clean, readable sans-serif font for body text, navigation, product information, and buttons.
+Build the website around these essential components:
+Create a visually attractive homepage that immediately communicates the HIKAYAT brand identity.
+Include:
+- HIKAYAT logo.
+- Home.
+- Shop.
+- Men's Fragrances.
+- Women's Fragrances.
+- Unisex.
+- Search icon.
+- User account icon.
+- Shopping cart icon with item counter.
+The navigation must be clean, intuitive, and responsive.
+
+On mobile, use a compact navigation menu with a hamburger icon.
+Create an elegant hero section with premium perfume photography.
+
+Main headline:
+"Discover Your Signature Scent."
+
+Supporting text:
+"Find the fragrance that reflects your personality and tells your story."
+
+Include two CTA buttons:
+- Explore Collection
+- Discover Best Sellers
+Use premium photography, elegant typography, and subtle animations.
+Create a dedicated product section titled:
+
+"Explore Our Collection"
+
+Include product categories and filtering options.
+
+Display products in a responsive grid:
+- Four columns on desktop.
+- Two columns on tablet.
+- Two columns or a suitable compact layout on mobile.
+Every product card should include:
+- High-quality perfume image.
+- Perfume name.
+- Brand name.
+- Price.
+- Discount price when available.
+- Star rating when actual reviews are available.
+- Wishlist button.
+- Quick View button.
+- Add to Cart button.
+Product cards should have elegant hover effects and smooth interactions.
+
+Use consistent image dimensions, refined spacing, and clean typography.
+Include visually prominent Call-to-Action buttons.
+
+The Add to Cart button must:
+- Respond immediately when clicked.
+- Display a clear success notification.
+- Update the shopping cart counter.
+- Provide visual feedback.
+- Allow users to continue shopping or view their cart.
+Create a shopping cart interface that displays selected products, quantities, prices, and subtotal.
+Design the entire user experience around this journey:
+
+Step 1 – Discover
+The customer lands on the homepage, explores the hero section, discovers collections, and browses available perfumes.
+
+Step 2 – Explore and Choose
+The customer browses product cards, uses filters, views product details, and compares fragrance options.
+
+Step 3 – Interact
+The customer clicks product cards, uses Quick View, adds products to the wishlist, and interacts with shopping buttons.
+
+Step 4 – Receive Feedback
+Every important interaction must produce a clear response:
+- Successful Add to Cart notification.
+- Updated cart counter.
+- Wishlist confirmation.
+- Search results.
+- Filtered product results.
+- Empty cart message.
+- Clear loading and error states.
+Step 5 – Purchase
+The customer reviews the shopping cart, adjusts quantities, sees the updated total, and proceeds to checkout.
+
+Make every interaction meaningful and intuitive. Avoid decorative buttons that do nothing.
+Use a mobile-first approach.
+
+Ensure the website works beautifully on:
+- Desktop.
+- Laptop.
+- Tablet.
+- Mobile phones.
+Responsive requirements:
+- Adaptive navigation.
+- Responsive product grids.
+- Proper image scaling.
+- Touch-friendly buttons.
+- Readable typography.
+- Mobile shopping cart experience.
+- No horizontal overflow.
+Support both English (LTR) and Arabic (RTL).
+Use a Modern Luxury aesthetic.
+
+Include:
+- Generous whitespace.
+- Premium perfume photography.
+- Elegant product layouts.
+- Subtle shadows.
+- Smooth transitions.
+- Refined hover effects.
+- Minimal animations.
+- Consistent spacing and visual hierarchy.
+Avoid clutter, excessive gradients, bright colors, and unnecessary decorative elements.
+The website should include functional:
+- Navigation links.
+- Product cards.
+- Search functionality.
+- Category filters.
+- Quick View.
+- Wishlist interaction.
+- Add to Cart.
+- Shopping cart counter.
+- Quantity controls.
+- Notifications and feedback messages.
+- Responsive mobile menu.
+Use realistic placeholder products and prices until actual store data is provided.
+Create a polished, professional, modern luxury fragrance e-commerce website.
+
+The main priority is to combine strong brand identity with a smooth and interactive shopping experience.
+
+The user's journey must feel natural:
+
+Explore → Discover → Choose → Interact → Add to Cart → Receive Feedback.
+
+The final result should look like a real premium perfume brand, not a generic online store.
+
+Brand direction: HIKAYAT – Modern Luxury, Quiet Elegance, and Youthful Sophistication.
