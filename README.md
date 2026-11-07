@@ -74,7 +74,9 @@ Open the address reported by Next.js. Configure `SUPABASE_URL` and `SUPABASE_PUB
 - Row-level security permits public reads of published products only. There are no public write policies.
 - Schema migration files live in `artifacts/hikayat/supabase/migrations/`.
 - The existing 10 sample fragrances have been seeded without overwriting existing rows.
+- Rerun `artifacts/hikayat/supabase/seed.sql` in Supabase SQL Editor to insert three sample products when missing. It does not overwrite existing products.
 - Use the Supabase dashboard to edit product data or add products. Product data must match `src/domain/product-schema.ts`.
+- Edit the `data` payload: the top-level `name`, `description`, `price`, `image`, and `category` columns are generated from it automatically.
 - Enable Email authentication in Supabase Auth. If email confirmation is enabled, configure allowed redirect URLs to include your application origin followed by `/api/auth/callback`.
 - Confirmation completes in the same browser that requested signup using a server-held PKCE verifier. A user who confirms on another device can return to the store and sign in after verification.
 - Session tokens live in httpOnly cookies with SameSite protections. Credentials and tokens are never returned to client JavaScript or stored in localStorage.
@@ -89,6 +91,9 @@ pnpm --filter @workspace/hikayat run typecheck
 
 # Check all workspace packages
 pnpm run typecheck
+
+# Verify shared database client safety and seed data
+pnpm --filter @workspace/hikayat run test:db
 
 # Build the storefront outside the managed workflow
 PORT=5173 BASE_PATH=/ pnpm --filter @workspace/hikayat run build
@@ -110,6 +115,8 @@ artifacts/hikayat/
 │   ├── domain/          # Product types and pure cart/catalog operations
 │   ├── app/             # Next.js document, client entry point and API routes
 │   ├── infrastructure/  # Catalog, auth, persistence and server-only adapters
+│   ├── lib/db.ts        # Globally cached, server-only Supabase connection helper
+│   ├── models/          # User, Product and Order data models
 │   ├── application/     # Providers and hooks coordinating shopping state
 │   ├── i18n/            # English and Arabic interface messages
 │   ├── presentation/    # Focused components, pages and interaction hooks
@@ -118,6 +125,8 @@ artifacts/hikayat/
 ```
 
 Domain code does not depend on React or browser APIs. Infrastructure handles catalog access and persistence; application hooks coordinate state; presentation renders the shopping experience.
+
+The shared connection helper is lazy so production builds do not need to contact Supabase. It reuses a stateless client across warm server invocations without sharing user tokens. `User` profiles have a name, unique email and creation date; password hashing stays with Supabase Auth. Orders contain a user reference, product/quantity/price snapshots, total, status (`pending` or `paid`) and creation date. Database ownership policies prevent customers from reading another customer's profile or orders.
 
 See [the architecture guide](artifacts/hikayat/ARCHITECTURE.md) for more detail.
 

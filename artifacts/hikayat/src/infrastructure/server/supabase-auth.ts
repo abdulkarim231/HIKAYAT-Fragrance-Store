@@ -2,7 +2,7 @@ import 'server-only';
 import { randomBytes, createHash } from 'node:crypto';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
-import { supabaseSettings } from './supabase-settings';
+import { getDb } from '@/lib/db';
 
 const ACCESS = 'hikayat-access';
 const REFRESH = 'hikayat-refresh';
@@ -21,25 +21,13 @@ export class AuthFailure extends Error {
   constructor(public code: AuthCode, public status = 400) { super(code); }
 }
 
-function settings() {
-  try { return supabaseSettings(); } catch { throw new AuthFailure('auth_unavailable', 503); }
-}
-
 async function authRequest(path: string, body?: object, token?: string, method = 'POST') {
-  const { url, key } = settings();
   let response: Response;
   try {
-    response = await fetch(new URL(`/auth/v1/${path}`, url), {
-      method,
-      headers: {
-        apikey: key,
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: body ? JSON.stringify(body) : undefined,
-      cache: 'no-store',
-      redirect: 'error',
-      signal: AbortSignal.timeout(12_000),
+    response = await getDb().request(`/auth/v1/${path}`, {
+      method: method === 'GET' ? 'GET' : 'POST',
+      body,
+      accessToken: token,
     });
   } catch { throw new AuthFailure('auth_unavailable', 503); }
   const result: unknown = response.status === 204 ? {} : await response.json().catch(() => ({}));

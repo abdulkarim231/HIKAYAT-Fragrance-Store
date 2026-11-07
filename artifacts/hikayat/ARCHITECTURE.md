@@ -26,6 +26,18 @@ presentation  ->  application  ->  domain
 ## Catalog
 The application repository calls same-origin `/api/catalog`. Its Next.js handler reads published `public.products` rows through Supabase REST using server-only configuration and validates them against a shared product schema. RLS allows public SELECT for published rows, never writes. Ten original sample products are seeded in Supabase. The original demo module is seed reference, not a runtime fallback. Queries refresh on mount/focus and every minute so dashboard edits become visible.
 
+## Shared database access and models
+
+- `src/lib/db.ts` provides `getDb()`, a lazy, globally cached Supabase REST connection facade. Warm Vercel invocations reuse this stateless facade and Node's pooled HTTP transport. User access tokens are passed per request and are never cached globally.
+- `src/models/User.ts` maps `public.users` to `id`, `name`, unique `email`, and `createdAt`. A database trigger creates and synchronizes profiles from Supabase Auth. Passwords and password hashes remain solely in Supabase Auth, as confirmed by the user.
+- `src/models/Product.ts` maps published catalog records to the full localized fragrance model and `createdAt`. Database columns `name`, `description`, `price`, `image`, and `category` are generated from the existing `data` payload, keeping both representations consistent. Edit `data`, not the generated columns.
+- `src/models/Order.ts` maps `orders` and related `order_items` to `user`, `items` (`product`, `quantity`, price snapshot), `total`, `pending`/`paid` status, and `createdAt`. Foreign keys maintain user/product relationships.
+- RLS limits profiles, orders, and line items to their owner. Anonymous users cannot read private tables. Authenticated users can update their own profile name only; they cannot change profile emails or write orders, prices, totals, or payment status.
+- `supabase/seed.sql` inserts three sample products without overwriting existing records. Run it through Supabase SQL Editor after migrations. The original ten products remain intact.
+- `pnpm --filter @workspace/hikayat run test:db` checks shared-client reuse, request-scoped tokens, configuration safety, and the seed payload. `supabase/tests/database-rules.sql` verifies database constraints, profile creation, and ownership policies using fixtures that are rolled back.
+
+Order persistence is prepared for a future trusted checkout. It does not enable purchases; checkout must later create the order and its line items atomically and validate server-owned prices.
+
 ## Authentication
 The account dialog uses generated auth hooks and a shared provider. Next.js routes handle signup, password sign-in, validated current-user lookup, refresh, logout, and PKCE email confirmation through Supabase Auth. Only user ID and email reach the client; access/refresh tokens are in httpOnly cookies. State-changing requests enforce same-origin checks. Supabase manages password hashing and confirmation policy. No custom password database or Supabase service-role key is used.
 
