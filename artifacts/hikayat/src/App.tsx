@@ -10,6 +10,7 @@ import ProductPage from '@/presentation/pages/product-page';
 import BagPage from '@/presentation/pages/bag-page';
 import CheckoutPage from '@/presentation/pages/checkout-page';
 import WishlistPage from '@/presentation/pages/wishlist-page';
+import LoginPage from '@/presentation/pages/login-page';
 import NotFound from '@/pages/not-found';
 
 function Router() {
@@ -24,6 +25,7 @@ function Router() {
           <Route path="/bag" component={BagPage} />
           <Route path="/checkout" component={CheckoutPage} />
           <Route path="/wishlist" component={WishlistPage} />
+          <Route path="/login" component={LoginPage} />
           <Route component={NotFound} />
         </Switch>
       </RoutedErrorBoundary>

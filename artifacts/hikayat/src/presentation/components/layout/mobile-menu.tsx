@@ -3,7 +3,6 @@ import { Link, useLocation } from 'wouter';
 import { Heart, Menu, User } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useLocale } from '@/application/locale-provider';
-import { useUI } from '@/application/ui-provider';
 import { useWishlist } from '@/application/wishlist-provider';
 import { cn } from '@/lib/utils';
 import { iconBtn } from '@/presentation/components/common/styles';
@@ -12,7 +11,6 @@ import { NAV_ITEMS } from './nav-items';
 export function MobileMenu() {
   const [open, setOpen] = useState(false);
   const { t, dir, toggleLocale } = useLocale();
-  const { setAccountOpen } = useUI();
   const wishlist = useWishlist();
   const [location] = useLocation();
   const close = () => setOpen(false);
@@ -50,9 +48,9 @@ export function MobileMenu() {
           <Link href="/wishlist" onClick={close} className="flex min-h-11 items-center gap-3 text-ivory/80 hover:text-gold" data-testid="link-mobile-wishlist">
             <Heart className="h-4 w-4" strokeWidth={1.5} /> {t('nav.wishlist')} ({wishlist.count})
           </Link>
-          <button type="button" onClick={() => { close(); setAccountOpen(true); }} className="flex min-h-11 items-center gap-3 text-start text-ivory/80 hover:text-gold" data-testid="button-mobile-account">
+          <Link href="/login" onClick={close} className="flex min-h-11 items-center gap-3 text-start text-ivory/80 hover:text-gold" data-testid="button-mobile-account">
             <User className="h-4 w-4" strokeWidth={1.5} /> {t('nav.account')}
-          </button>
+          </Link>
           <button type="button" onClick={toggleLocale} aria-label={t('lang.switchLabel')} className="mt-2 inline-flex min-h-11 w-fit items-center rounded-full border border-ivory/30 px-5 text-ivory hover:border-gold" data-testid="button-mobile-language">
             {t('lang.switch')}
           </button>

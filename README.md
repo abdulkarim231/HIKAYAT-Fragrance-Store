@@ -142,6 +142,7 @@ See [the architecture guide](artifacts/hikayat/ARCHITECTURE.md) for more detail.
 | `/shop/unisex` | Unisex fragrances |
 | `/product/:id` | Product details |
 | `/wishlist` | Saved fragrances |
+| `/login` | Bilingual sign-in, account creation, and account session controls |
 | `/bag` | Shopping bag |
 | `/checkout` | Demo delivery details and review |
 

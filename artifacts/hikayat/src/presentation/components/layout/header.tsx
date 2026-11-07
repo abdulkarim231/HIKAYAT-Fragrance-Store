@@ -14,7 +14,7 @@ export function Header() {
   const { t, toggleLocale } = useLocale();
   const { count } = useCart();
   const wishlist = useWishlist();
-  const { setSearchOpen, setAccountOpen } = useUI();
+  const { setSearchOpen } = useUI();
   const [location] = useLocation();
   const [scrolled, setScrolled] = useState(false);
 
@@ -65,9 +65,9 @@ export function Header() {
           <button type="button" className={iconBtn} onClick={() => setSearchOpen(true)} aria-label={t('nav.search')} data-testid="button-search">
             <Search className="h-[19px] w-[19px]" strokeWidth={1.5} />
           </button>
-          <button type="button" className={cn(iconBtn, 'hidden sm:inline-flex')} onClick={() => setAccountOpen(true)} aria-label={t('nav.account')} data-testid="button-account">
+          <Link href="/login" className={cn(iconBtn, 'hidden sm:inline-flex')} aria-label={t('nav.account')} data-testid="button-account">
             <User className="h-[19px] w-[19px]" strokeWidth={1.5} />
-          </button>
+          </Link>
           <Link href="/wishlist" className={cn(iconBtn, 'hidden sm:inline-flex')} aria-label={t('nav.wishlistCount', { count: wishlist.count })} data-testid="link-wishlist">
             <Heart className="h-[19px] w-[19px]" strokeWidth={1.5} />
             {wishlist.count > 0 && <span className="absolute end-2 top-2 h-1.5 w-1.5 rounded-full bg-gold" />}

@@ -44,12 +44,23 @@ async function authRequest(path: string, body?: object, token?: string, method =
   } catch { throw new AuthFailure('auth_unavailable', 503); }
   const result: unknown = response.status === 204 ? {} : await response.json().catch(() => ({}));
   if (!response.ok) {
-    const code = z.object({ code: z.string().optional(), error_code: z.string().optional() }).safeParse(result);
-    const providerCode = code.success ? (code.data.code ?? code.data.error_code) : '';
+    const code = z.object({
+      code: z.union([z.string(), z.number()]).optional(),
+      error_code: z.string().optional(),
+    }).safeParse(result);
+    const providerCode = code.success
+      ? (code.data.error_code ?? (typeof code.data.code === 'string' ? code.data.code : ''))
+      : '';
+    // Log only the provider's machine code and HTTP status, never credentials,
+    // email addresses, tokens, or the response body.
+    console.error('[auth]', response.status,
+      providerCode && /^[a-z_]+$/.test(providerCode) ? providerCode : 'provider_error');
     if (response.status === 429) throw new AuthFailure('rate_limited', 429);
     if (response.status >= 500) throw new AuthFailure('auth_unavailable', 503);
     if (providerCode === 'email_not_confirmed') throw new AuthFailure('email_not_confirmed');
     if (providerCode === 'weak_password') throw new AuthFailure('weak_password');
+    if (providerCode === 'email_address_invalid') throw new AuthFailure('invalid_input');
+    if (path.startsWith('signup')) throw new AuthFailure('signup_failed');
     // Avoid disclosing whether an email address exists.
     throw new AuthFailure('invalid_credentials');
   }
