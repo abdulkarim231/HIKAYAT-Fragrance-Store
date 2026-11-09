@@ -104,6 +104,16 @@ PORT=5173 BASE_PATH=/ pnpm --filter @workspace/hikayat run serve
 
 This is a server-backed Next.js application, not a static export. Production requires `next build` followed by `next start`, or a Next.js-compatible host such as Vercel. The same Supabase settings must be configured on the production host.
 
+### Vercel
+
+- Import only `artifacts/hikayat`, with the **Next.js** framework preset.
+- Include source files outside the root directory so shared workspace packages in `lib/` are available.
+- Install command: `pnpm install --frozen-lockfile`.
+- Build command: `pnpm run build`. The storefront script first builds its referenced API client's TypeScript declarations, then runs Next.js, so a fresh checkout does not depend on ignored local build outputs.
+- Leave the output directory at its Next.js default.
+- Add `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` privately in Vercel's environment variables.
+- After publishing, allow the site's `/api/auth/callback` URL in Supabase Authentication's redirect URL settings.
+
 ## Clean architecture
 
 The storefront separates business rules, application state, external dependencies, and UI:

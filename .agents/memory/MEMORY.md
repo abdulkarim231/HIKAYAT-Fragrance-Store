@@ -1,0 +1,1 @@
+- [Clean deployment validation](clean-deployment-validation.md) — local generated declarations can hide TypeScript project-reference failures on fresh hosts.
