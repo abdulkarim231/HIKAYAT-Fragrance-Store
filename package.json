@@ -10,7 +10,12 @@
   },
   "private": true,
   "dependencies": {
-    "@replit/connectors-sdk": "^0.4.3"
+    "@replit/connectors-sdk": "^0.4.3",
+    "@types/pg": "^8.23.1",
+    "pg": "^8.23.1",
+    "stripe": "^23.1.0",
+    "stripe-replit-sync": "^1.0.0",
+    "tsx": "catalog:"
   },
   "devDependencies": {
     "prettier": "^3.9.10",
