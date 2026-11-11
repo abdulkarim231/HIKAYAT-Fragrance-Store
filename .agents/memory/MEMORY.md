@@ -1,2 +1,3 @@
 - [Clean deployment validation](clean-deployment-validation.md) — local generated declarations can hide TypeScript project-reference failures on fresh hosts.
 - [Supabase direct connection DNS](supabase-connection-dns.md) — an IPv6-only direct endpoint can resolve in DNS yet fail with ENOTFOUND in the PostgreSQL driver.
+- [Signup without email confirmation](signup-email-policy.md) — the user wants HIKAYAT signup to sign users in immediately, without email confirmation.
