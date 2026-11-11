@@ -8,6 +8,86 @@
 import * as zod from 'zod';
 
 
+export const createCheckoutBodyItemsItemProductIdMax = 100;
+
+
+export const createCheckoutBodyItemsItemProductIdRegExp = new RegExp('^[a-z0-9-]+$');
+export const createCheckoutBodyItemsItemQuantityMax = 10;
+
+export const createCheckoutBodyItemsMax = 30;
+
+export const createCheckoutBodyDeliveryFullNameMin = 2;
+export const createCheckoutBodyDeliveryFullNameMax = 120;
+
+export const createCheckoutBodyDeliveryPhoneRegExp = new RegExp('^\\+?[0-9\\s-]{8,16}$');
+export const createCheckoutBodyDeliveryEmailMax = 254;
+
+export const createCheckoutBodyDeliveryCityMin = 2;
+export const createCheckoutBodyDeliveryCityMax = 100;
+
+export const createCheckoutBodyDeliveryAddressMin = 5;
+export const createCheckoutBodyDeliveryAddressMax = 500;
+
+export const createCheckoutBodyDeliveryNotesMax = 300;
+
+
+
+export const CreateCheckoutBody = zod.object({
+  "requestId": zod.string().uuid(),
+  "locale": zod.enum(['en', 'ar']),
+  "items": zod.array(zod.object({
+  "productId": zod.string().max(createCheckoutBodyItemsItemProductIdMax).regex(createCheckoutBodyItemsItemProductIdRegExp),
+  "quantity": zod.number().int().min(1).max(createCheckoutBodyItemsItemQuantityMax)
+})).min(1).max(createCheckoutBodyItemsMax),
+  "delivery": zod.object({
+  "fullName": zod.string().min(createCheckoutBodyDeliveryFullNameMin).max(createCheckoutBodyDeliveryFullNameMax),
+  "phone": zod.string().regex(createCheckoutBodyDeliveryPhoneRegExp),
+  "email": zod.string().email().max(createCheckoutBodyDeliveryEmailMax),
+  "city": zod.string().min(createCheckoutBodyDeliveryCityMin).max(createCheckoutBodyDeliveryCityMax),
+  "address": zod.string().min(createCheckoutBodyDeliveryAddressMin).max(createCheckoutBodyDeliveryAddressMax),
+  "notes": zod.string().max(createCheckoutBodyDeliveryNotesMax).optional()
+})
+})
+
+export const CreateCheckoutResponse = zod.object({
+  "url": zod.string().url()
+})
+
+
+export const GetPaymentOrderQueryParams = zod.object({
+  "session_id": zod.coerce.string()
+})
+
+export const getPaymentOrderResponseTotalMin = 0;
+
+
+export const getPaymentOrderResponseItemsItemPriceMin = 0;
+
+
+
+export const GetPaymentOrderResponse = zod.object({
+  "id": zod.string().uuid(),
+  "status": zod.enum(['pending', 'paid']),
+  "total": zod.number().min(getPaymentOrderResponseTotalMin),
+  "currency": zod.enum(['SAR']),
+  "items": zod.array(zod.object({
+  "productId": zod.string(),
+  "quantity": zod.number().int().min(1),
+  "price": zod.number().min(getPaymentOrderResponseItemsItemPriceMin)
+}))
+})
+
+
+/**
+ * Server-to-server only. Raw body verified using the Stripe signature.
+ */
+export const ProcessStripeWebhookHeader = zod.object({
+  "stripe-signature": zod.string()
+})
+
+export const ProcessStripeWebhookResponse = zod.unknown()
+
+
 export const GetCurrentUserResponse = zod.object({
   "user": zod.union([zod.object({
   "id": zod.string(),

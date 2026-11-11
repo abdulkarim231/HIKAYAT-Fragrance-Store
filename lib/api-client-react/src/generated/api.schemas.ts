@@ -48,7 +48,103 @@ export interface AuthError {
   code: AuthErrorCode;
 }
 
+export type CheckoutInputLocale = typeof CheckoutInputLocale[keyof typeof CheckoutInputLocale];
+
+
+export const CheckoutInputLocale = {
+  en: 'en',
+  ar: 'ar',
+} as const;
+
+export type CheckoutInputItemsItem = {
+  /**
+     * @maxLength 100
+     * @pattern ^[a-z0-9-]+$
+     */
+  productId: string;
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  quantity: number;
+};
+
+export type CheckoutInputDelivery = {
+  /**
+     * @minLength 2
+     * @maxLength 120
+     */
+  fullName: string;
+  /** @pattern ^\+?[0-9\s-]{8,16}$ */
+  phone: string;
+  /** @maxLength 254 */
+  email: string;
+  /**
+     * @minLength 2
+     * @maxLength 100
+     */
+  city: string;
+  /**
+     * @minLength 5
+     * @maxLength 500
+     */
+  address: string;
+  /** @maxLength 300 */
+  notes?: string;
+};
+
+export interface CheckoutInput {
+  requestId: string;
+  locale: CheckoutInputLocale;
+  /**
+     * @minItems 1
+     * @maxItems 30
+     */
+  items: CheckoutInputItemsItem[];
+  delivery: CheckoutInputDelivery;
+}
+
+export type PaymentOrderStatus = typeof PaymentOrderStatus[keyof typeof PaymentOrderStatus];
+
+
+export const PaymentOrderStatus = {
+  pending: 'pending',
+  paid: 'paid',
+} as const;
+
+export type PaymentOrderCurrency = typeof PaymentOrderCurrency[keyof typeof PaymentOrderCurrency];
+
+
+export const PaymentOrderCurrency = {
+  SAR: 'SAR',
+} as const;
+
+export type PaymentOrderItemsItem = {
+  productId: string;
+  /** @minimum 1 */
+  quantity: number;
+  /** @minimum 0 */
+  price: number;
+};
+
+export interface PaymentOrder {
+  id: string;
+  status: PaymentOrderStatus;
+  /** @minimum 0 */
+  total: number;
+  currency: PaymentOrderCurrency;
+  items: PaymentOrderItemsItem[];
+}
+
 export interface HealthStatus {
   status: string;
 }
+
+export type CreateCheckout200 = {
+  url: string;
+};
+
+export type GetPaymentOrderParams = {
+session_id: string;
+};
 

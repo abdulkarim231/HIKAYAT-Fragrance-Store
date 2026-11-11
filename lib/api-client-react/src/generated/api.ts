@@ -29,7 +29,11 @@ import type {
   AuthError,
   AuthResult,
   AuthState,
-  HealthStatus
+  CheckoutInput,
+  CreateCheckout200,
+  GetPaymentOrderParams,
+  HealthStatus,
+  PaymentOrder
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -58,6 +62,261 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getCreateCheckoutUrl = () => {
+
+
+
+
+  return `/api/stripe/checkout`
+}
+
+export const createCheckout = async (checkoutInput: CheckoutInput, options?: Parameters<typeof customFetch>[1]): Promise<CreateCheckout200> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<CreateCheckout200>(getCreateCheckoutUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(checkoutInput)
+  }
+);}
+
+
+
+
+
+export const getCreateCheckoutMutationKey = () => ['createCheckout'] as const;
+
+export const getCreateCheckoutMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCheckout>>, TError,CreateCheckoutMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createCheckout>>, TError,CreateCheckoutMutationVariables, TContext> => {
+
+const mutationKey = getCreateCheckoutMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCheckout>>, CreateCheckoutMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createCheckout(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateCheckoutMutationResult = NonNullable<Awaited<ReturnType<typeof createCheckout>>>
+    export type CreateCheckoutMutationBody = BodyType<CheckoutInput>
+    export type CreateCheckoutMutationError = ErrorType<void>
+    export type CreateCheckoutMutationVariables = {data: BodyType<CheckoutInput>}
+
+    export const useCreateCheckout = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCheckout>>, TError,CreateCheckoutMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createCheckout>>,
+        TError,
+        CreateCheckoutMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateCheckoutMutationOptions(options), queryClient);
+    }
+
+export const getGetPaymentOrderUrl = (params: GetPaymentOrderParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/stripe/order?${stringifiedParams}` : `/api/stripe/order`
+}
+
+export const getPaymentOrder = async (params: GetPaymentOrderParams, options?: Parameters<typeof customFetch>[1]): Promise<PaymentOrder> => {
+
+  return customFetch<PaymentOrder>(getGetPaymentOrderUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPaymentOrderQueryKey = (params?: GetPaymentOrderParams,) => {
+    return [
+    `/api/stripe/order`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetPaymentOrderQueryOptions = <TData = Awaited<ReturnType<typeof getPaymentOrder>>, TError = ErrorType<void>>(params: GetPaymentOrderParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaymentOrder>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPaymentOrderQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPaymentOrder>>> = ({ signal }) => getPaymentOrder(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPaymentOrder>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetPaymentOrderQueryResult = NonNullable<Awaited<ReturnType<typeof getPaymentOrder>>>
+export type GetPaymentOrderQueryError = ErrorType<void>
+
+
+export function useGetPaymentOrder<TData = Awaited<ReturnType<typeof getPaymentOrder>>, TError = ErrorType<void>>(
+ params: GetPaymentOrderParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaymentOrder>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPaymentOrder>>,
+          TError,
+          Awaited<ReturnType<typeof getPaymentOrder>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPaymentOrder<TData = Awaited<ReturnType<typeof getPaymentOrder>>, TError = ErrorType<void>>(
+ params: GetPaymentOrderParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaymentOrder>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPaymentOrder>>,
+          TError,
+          Awaited<ReturnType<typeof getPaymentOrder>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPaymentOrder<TData = Awaited<ReturnType<typeof getPaymentOrder>>, TError = ErrorType<void>>(
+ params: GetPaymentOrderParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaymentOrder>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetPaymentOrder<TData = Awaited<ReturnType<typeof getPaymentOrder>>, TError = ErrorType<void>>(
+ params: GetPaymentOrderParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaymentOrder>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetPaymentOrderQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getProcessStripeWebhookUrl = () => {
+
+
+
+
+  return `/api/stripe/webhook`
+}
+
+/**
+ * Server-to-server only. Raw body verified using the Stripe signature.
+ */
+export const processStripeWebhook = async ( options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getProcessStripeWebhookUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getProcessStripeWebhookMutationKey = () => ['processStripeWebhook'] as const;
+
+export const getProcessStripeWebhookMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof processStripeWebhook>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof processStripeWebhook>>, TError,void, TContext> => {
+
+const mutationKey = getProcessStripeWebhookMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof processStripeWebhook>>, void> = () => {
+
+
+          return  processStripeWebhook(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ProcessStripeWebhookMutationResult = NonNullable<Awaited<ReturnType<typeof processStripeWebhook>>>
+
+    export type ProcessStripeWebhookMutationError = ErrorType<void>
+
+
+    export const useProcessStripeWebhook = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof processStripeWebhook>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof processStripeWebhook>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getProcessStripeWebhookMutationOptions(options), queryClient);
+    }
 
 export const getGetCurrentUserUrl = () => {
 

@@ -9,11 +9,11 @@ import type { MessageKey } from '@/i18n/messages';
 import { btnPrimary } from '@/presentation/components/common/styles';
 
 const schema = z.object({
-  fullName: z.string().trim().min(2, 'checkout.err.name'),
+  fullName: z.string().trim().min(2, 'checkout.err.name').max(120, 'checkout.err.name'),
   phone: z.string().trim().regex(/^\+?[0-9\s-]{8,16}$/, 'checkout.err.phone'),
-  email: z.string().trim().email('checkout.err.email'),
-  city: z.string().trim().min(2, 'checkout.err.city'),
-  address: z.string().trim().min(5, 'checkout.err.address'),
+  email: z.string().trim().email('checkout.err.email').max(254, 'checkout.err.email'),
+  city: z.string().trim().min(2, 'checkout.err.city').max(100, 'checkout.err.city'),
+  address: z.string().trim().min(5, 'checkout.err.address').max(500, 'checkout.err.address'),
   notes: z.string().max(300).optional(),
 });
 export type DeliveryInfo = z.infer<typeof schema>;

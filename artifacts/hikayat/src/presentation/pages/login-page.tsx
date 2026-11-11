@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { ArrowUpRight } from 'lucide-react';
 import { useLocale } from '@/application/locale-provider';
 import { useAuth } from '@/application/auth-provider';
@@ -9,6 +9,17 @@ import { assetUrl } from '@/infrastructure/assets';
 export default function LoginPage() {
   const { t, dir } = useLocale();
   const { user } = useAuth();
+  const [, navigate] = useLocation();
+
+  useEffect(() => {
+    if (!user) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('next') === 'checkout') navigate('/checkout');
+    if (params.get('next') === 'payment') {
+      const session = params.get('session_id') ?? '';
+      if (/^cs_test_[A-Za-z0-9_]{1,250}$/.test(session)) navigate(`/checkout/success?session_id=${encodeURIComponent(session)}`);
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     const previousTitle = document.title;

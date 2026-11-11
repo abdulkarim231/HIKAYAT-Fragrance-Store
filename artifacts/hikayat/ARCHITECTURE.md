@@ -1,6 +1,6 @@
 # HIKAYAT storefront architecture
 
-Next.js App Router storefront with Supabase catalog data and Supabase Auth. Cart, wishlist and language remain device-local. Payments and order placement are not connected.
+Next.js App Router storefront with Supabase catalog data, Supabase Auth and Stripe-hosted test checkout. Cart, wishlist and language remain device-local. Live payments and fulfillment are not enabled.
 
 ## Layers (dependencies point inward)
 
@@ -36,7 +36,11 @@ The application repository calls same-origin `/api/catalog`. Its Next.js handler
 - `supabase/seed.sql` inserts three sample products without overwriting existing records. Run it through Supabase SQL Editor after migrations. The original ten products remain intact.
 - `pnpm --filter @workspace/hikayat run test:db` checks shared-client reuse, request-scoped tokens, configuration safety, and the seed payload. `supabase/tests/database-rules.sql` verifies database constraints, profile creation, and ownership policies using fixtures that are rolled back.
 
-Order persistence is prepared for a future trusted checkout. It does not enable purchases; checkout must later create the order and its line items atomically and validate server-owned prices.
+Trusted checkout creates pending orders and line items atomically from database prices. Stripe price IDs come from the protected synced Stripe schema in the same Supabase database. Signed webhook processing and authenticated order verification reconcile paid status against Stripe, checking ownership, order metadata, currency and amount. Browser totals and success URLs are never trusted.
+
+The shared `src/lib/db.ts` caches both the stateless Supabase HTTP client and a small server-only PostgreSQL pool globally. SQL connections use the IPv4-compatible Session pooler and Supabase's public CA with hostname/certificate verification. Stripe setup is explicit and repeatable; runtime initialization is lazy, not part of `next build`.
+
+`src/domain/checkout.ts` defines strict checkout input and money invariants. `src/infrastructure/server/payment-service.ts` owns checkout and payment verification, while `src/app/api/stripe/` contains thin Next.js routes. Payment credentials are read fresh from server environment variables, so the same code works on Vercel without relying on Replit's runtime connector identity. `scripts/setup-stripe.ts` creates test products using Stripe APIs and never writes directly into Stripe-owned sync tables.
 
 ## Authentication
 The account dialog uses generated auth hooks and a shared provider. Next.js routes handle signup, password sign-in, validated current-user lookup, refresh, logout, and PKCE email confirmation through Supabase Auth. Only user ID and email reach the client; access/refresh tokens are in httpOnly cookies. State-changing requests enforce same-origin checks. Supabase manages password hashing and confirmation policy. No custom password database or Supabase service-role key is used.

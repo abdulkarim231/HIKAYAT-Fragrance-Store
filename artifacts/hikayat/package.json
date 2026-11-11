@@ -8,7 +8,9 @@
     "build": "tsc --build ../../lib/api-client-react && next build",
     "serve": "next start --hostname 0.0.0.0",
     "typecheck": "tsc --build ../../lib/api-client-react && tsc -p tsconfig.json --noEmit",
-    "test:db": "node --test tests/db.test.cjs"
+    "test:db": "node --test tests/db.test.cjs",
+    "test:payments": "node --test tests/payments.test.cjs",
+    "setup:stripe": "NODE_OPTIONS=--conditions=react-server tsx --tsconfig tsconfig.json scripts/setup-stripe.ts"
   },
   "devDependencies": {
     "@hookform/resolvers": "^3.10.0",

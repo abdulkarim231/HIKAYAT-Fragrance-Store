@@ -14,7 +14,7 @@ A responsive English/Arabic perfume storefront built with React and TypeScript. 
 - Shopping bag with quantity controls, removal, subtotal, and savings.
 - Immediate notifications for shopping actions.
 - Browser persistence for the bag, wishlist, and language preference.
-- Delivery form validation and an on-screen checkout review.
+- Delivery form validation, checkout review, and Stripe-hosted test payments.
 - Supabase Auth account creation, sign-in, and sign-out through server-side API routes.
 - Supabase-backed catalog with published-product read access and no public write permissions.
 - Loading, error, empty, and not-found states.
@@ -22,7 +22,7 @@ A responsive English/Arabic perfume storefront built with React and TypeScript. 
 
 ## Current status
 
-This storefront uses **Next.js and Supabase**, with sample product data. It is not yet a live payment or order-processing service.
+This storefront uses **Next.js and Supabase**, with sample product data and **Stripe test mode only**. No real payments or product deliveries are supported.
 
 - Products and prices are sample data stored in the Supabase `public.products` table.
 - Shopping preferences are stored in the current browser, not synchronized to an account.
@@ -163,7 +163,8 @@ See [the architecture guide](artifacts/hikayat/ARCHITECTURE.md) for more detail.
 | `/wishlist` | Saved fragrances |
 | `/login` | Bilingual sign-in, account creation, and account session controls |
 | `/bag` | Shopping bag |
-| `/checkout` | Demo delivery details and review |
+| `/checkout` | Authenticated delivery details, review, and Stripe test checkout |
+| `/checkout/success` | Server-verified test order confirmation |
 
 ## Customization
 
@@ -171,7 +172,7 @@ See [the architecture guide](artifacts/hikayat/ARCHITECTURE.md) for more detail.
 
 Edit products in Supabase's `public.products` table. The original `demo-products.ts` is retained as seed reference only and is not imported by the runtime catalog repository.
 
-The `ProductRepository` fetches `/api/catalog`; its server adapter reads and validates Supabase product data. Database errors produce a retryable UI state, not a hardcoded fallback. Real checkout, inventory, account synchronization, and server-side price validation still require additional integration work.
+The `ProductRepository` fetches `/api/catalog`; its server adapter reads and validates Supabase product data. Database errors produce a retryable UI state, not a hardcoded fallback. Checkout validates prices server-side and uses real test-mode Stripe price IDs. Inventory, fulfillment, and cross-device cart synchronization are not implemented.
 
 ### Languages
 
@@ -194,4 +195,58 @@ English display typography uses Kedebideri, with DM Sans for body text. Arabic u
 
 ## Before accepting real orders
 
-Connect a secure server-backed checkout/payment service and inventory handling. Validate prices and availability on the server, configure shipping and store policies, verify Supabase email confirmation redirect settings, and verify the complete purchase flow before enabling order placement.
+Before any real launch, implement inventory and fulfillment, configure shipping and store policies, resolve signup email delivery, and verify the complete purchase flow. Live Stripe keys are deliberately rejected by this implementation.
+
+## Stripe test checkout setup
+
+All credentials are server-only. Save these in **Replit Secrets**, and separately in
+**Vercel → Project → Settings → Environment Variables**:
+
+| Name | Value source |
+| --- | --- |
+| `SUPABASE_URL` | Supabase project URL |
+| `SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key |
+| `SUPABASE_DATABASE_URL` | Supabase **Connect → Session pooler** PostgreSQL URI, with the database password filled in privately |
+| `STRIPE_SECRET_KEY` | Stripe test secret key beginning `sk_test_` |
+| `APP_URL` | The public HTTPS origin of the intended deployment, with no path |
+
+`STRIPE_PUBLISHABLE_KEY` may remain stored securely but is not needed for hosted
+Checkout; the browser redirects to Stripe instead of embedding a card form.
+Do not use live keys or put any secret in a `NEXT_PUBLIC_*` variable.
+
+For Vercel, set the variables for the Production environment and redeploy.
+Replit Secrets do not automatically become Vercel environment variables.
+
+Run this once for initial setup, and again after changing catalog prices:
+
+```bash
+pnpm --filter @workspace/hikayat run setup:stripe
+```
+
+The script uses the existing Supabase database, creates the Stripe sync schema
+through `stripe-replit-sync`, adds non-destructive checkout order columns, and
+creates or reuses Stripe test products/prices for published Supabase products.
+It registers a managed webhook at `${APP_URL}/api/stripe/webhook` and backfills
+Stripe data. The sync schema is not exposed to public Supabase roles. The public
+Supabase catalog remains the editorial source; its IDs are linked through Stripe
+product metadata. Payment prices are queried from the synced Stripe tables.
+
+The public deployment must serve the webhook route without login or deployment
+protection; the route itself requires a valid Stripe signature. Managed signing
+secrets remain server-side in the protected sync schema. An optional manually
+configured `STRIPE_WEBHOOK_SECRET` must match that endpoint if supplied.
+
+Checkout requires a confirmed Supabase session. Order creation uses database
+price snapshots, server-owned identity, transactions, and idempotency keys.
+Only verified Stripe payment status can mark an order paid. A success-page URL
+alone never confirms payment. Cancelled or failed payments retain the shopping
+bag; verified purchases remove only purchased quantities, once per order.
+
+Test with Stripe card **4242 4242 4242 4242**, a future expiry and any test CVC.
+Never enter real card information. No shipping fee is charged in test mode.
+
+```bash
+pnpm --filter @workspace/hikayat run test:db
+pnpm --filter @workspace/hikayat run test:payments
+pnpm --filter @workspace/hikayat run build
+```

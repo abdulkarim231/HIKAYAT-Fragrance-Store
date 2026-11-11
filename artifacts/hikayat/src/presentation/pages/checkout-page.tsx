@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { useCreateCheckout } from '@workspace/api-client-react';
 import { Link } from 'wouter';
 import { CircleAlert, CheckCircle2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLocale } from '@/application/locale-provider';
+import { useAuth } from '@/application/auth-provider';
+import { useCart } from '@/application/cart-provider';
 import { useBag } from '@/application/use-catalog';
 import { container, btnGhost, btnPrimary } from '@/presentation/components/common/styles';
 import { EmptyState, ErrorState } from '@/presentation/components/common/states';
@@ -11,10 +14,44 @@ import { BagSummary } from '@/presentation/components/bag/bag-summary';
 import { DeliveryForm, type DeliveryInfo } from '@/presentation/components/checkout/delivery-form';
 
 export default function CheckoutPage() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const auth = useAuth();
+  const { lines } = useCart();
   const { resolved, subtotal, savings, isLoading, isError, refetch } = useBag();
   const [reviewed, setReviewed] = useState<DeliveryInfo | null>(null);
   const [draft, setDraft] = useState<DeliveryInfo | undefined>();
+  const checkout = useCreateCheckout();
+  const request = useRef<{ fingerprint: string; id: string } | null>(null);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const cancelled = new URLSearchParams(window.location.search).get('payment') === 'cancelled';
+
+  async function pay() {
+    if (!reviewed || !auth.user || checkout.isPending) return;
+    setPaymentError(null);
+    const fingerprint = JSON.stringify([auth.user.id, locale, lines, reviewed]);
+    if (request.current?.fingerprint !== fingerprint) request.current = { fingerprint, id: crypto.randomUUID() };
+    try {
+      const result = await checkout.mutateAsync({
+        data: { requestId: request.current.id, locale, items: lines, delivery: reviewed },
+      });
+      const url = new URL(result.url, window.location.origin);
+      if (url.origin !== 'https://checkout.stripe.com' && url.origin !== window.location.origin) throw new Error('invalid_redirect');
+      window.location.assign(url.href);
+    } catch (error) {
+      const code = error && typeof error === 'object' && 'data' in error
+        ? (error.data as { code?: string } | null)?.code : null;
+      if (code === 'catalog_changed') {
+        request.current = null;
+        await refetch();
+        setPaymentError(t('checkout.catalogChanged'));
+      } else if (code === 'unauthorized') {
+        await auth.refresh();
+        setPaymentError(t('checkout.signInRequired'));
+      } else {
+        setPaymentError(t('checkout.paymentError'));
+      }
+    }
+  }
 
   if (isLoading) return <div className={`${container} py-16`}><Skeleton className="h-96 w-full bg-olive/8" /></div>;
   if (isError) return <div className={`${container} py-16`}><ErrorState onRetry={() => refetch()} /></div>;
@@ -35,11 +72,19 @@ export default function CheckoutPage() {
           <p className="mt-1 text-sm leading-relaxed text-charcoal/80">{t('checkout.notice')}</p>
         </div>
       </div>
+      {cancelled && <p role="status" className="mt-5 text-sm text-olive">{t('checkout.cancelled')}</p>}
+      {paymentError && <p role="alert" className="mt-5 border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{paymentError}</p>}
 
       <div className="mt-10 grid gap-10 md:grid-cols-[1fr_380px] md:gap-14">
         <section>
           <h2 className="font-display mb-6 text-3xl text-olive">{t('checkout.delivery')}</h2>
-          {reviewed ? (
+          {auth.loading ? <Skeleton className="h-48 bg-olive/8" /> : !auth.user ? (
+            <div className="rounded-sm border border-olive/20 bg-card p-6">
+              <p className="mb-5 text-sm text-charcoal/80">{t('checkout.signInRequired')}</p>
+              <Link href="/login?next=checkout" className={btnPrimary} data-testid="link-checkout-login">{t('checkout.signIn')}</Link>
+              {auth.checkingError && <button type="button" className={`${btnGhost} mt-3`} onClick={() => void auth.refresh()}>{t('checkout.retry')}</button>}
+            </div>
+          ) : reviewed ? (
             <div className="rise rounded-sm border border-olive/20 bg-card p-6" aria-live="polite" data-testid="status-review">
               <div className="flex items-center gap-3 text-olive">
                 <CheckCircle2 className="h-5 w-5" strokeWidth={1.5} />
@@ -52,8 +97,8 @@ export default function CheckoutPage() {
                 <div className="sm:col-span-2"><dt className="text-xs text-muted-foreground">{t('checkout.address')}</dt><dd>{reviewed.address}, {reviewed.city}</dd></div>
               </dl>
               <div className="mt-6 flex flex-wrap gap-3">
-                <button type="button" onClick={() => { setDraft(reviewed); setReviewed(null); }} className={btnGhost} data-testid="button-edit-details">{t('checkout.edit')}</button>
-                <button type="button" disabled aria-disabled className={btnPrimary} data-testid="button-place-order">{t('checkout.placeOrderDisabled')}</button>
+                <button type="button" disabled={checkout.isPending} onClick={() => { setDraft(reviewed); setReviewed(null); }} className={btnGhost} data-testid="button-edit-details">{t('checkout.edit')}</button>
+                <button type="button" onClick={() => void pay()} disabled={checkout.isPending} className={btnPrimary} data-testid="button-place-order">{t(checkout.isPending ? 'checkout.connecting' : 'checkout.pay')}</button>
               </div>
             </div>
           ) : (

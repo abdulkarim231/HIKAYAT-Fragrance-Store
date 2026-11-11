@@ -9,6 +9,7 @@ import ShopPage from '@/presentation/pages/shop-page';
 import ProductPage from '@/presentation/pages/product-page';
 import BagPage from '@/presentation/pages/bag-page';
 import CheckoutPage from '@/presentation/pages/checkout-page';
+import PaymentResultPage from '@/presentation/pages/payment-result-page';
 import WishlistPage from '@/presentation/pages/wishlist-page';
 import LoginPage from '@/presentation/pages/login-page';
 import NotFound from '@/presentation/pages/not-found';
@@ -24,6 +25,7 @@ function Router() {
           <Route path="/product/:id" component={ProductPage} />
           <Route path="/bag" component={BagPage} />
           <Route path="/checkout" component={CheckoutPage} />
+          <Route path="/checkout/success" component={PaymentResultPage} />
           <Route path="/wishlist" component={WishlistPage} />
           <Route path="/login" component={LoginPage} />
           <Route component={NotFound} />

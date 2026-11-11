@@ -1,4 +1,5 @@
 import 'server-only';
+import type { Pool, PoolConfig } from 'pg';
 
 interface DatabaseRequest {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
@@ -13,6 +14,36 @@ interface DatabaseConnection {
 
 declare global {
   var hikayatDatabase: DatabaseConnection | undefined;
+  var hikayatSqlPool: Pool | undefined;
+}
+/** Direct server-only SQL uses the same Supabase database, not a second database. */
+export async function getSqlConfig(): Promise<PoolConfig> {
+  const { supabaseCa } = await import('@/infrastructure/server/supabase-ca');
+  const raw = process.env.SUPABASE_DATABASE_URL;
+  if (!raw) throw new Error('SUPABASE_DATABASE_URL is required');
+  const url = new URL(raw);
+  if (!['postgres:', 'postgresql:'].includes(url.protocol)
+    || !url.hostname.endsWith('.pooler.supabase.com')) {
+    throw new Error('A Supabase Session pooler PostgreSQL URI is required');
+  }
+  // Do not let URI query parameters override verified TLS options.
+  for (const key of ['sslmode', 'sslcert', 'sslkey', 'sslrootcert']) url.searchParams.delete(key);
+  return {
+    connectionString: url.toString(),
+    ssl: { ca: supabaseCa, rejectUnauthorized: true },
+    max: 3,
+    connectionTimeoutMillis: 12_000,
+    idleTimeoutMillis: 20_000,
+    allowExitOnIdle: true,
+  };
+}
+
+export async function getSqlDb(): Promise<Pool> {
+  if (!globalThis.hikayatSqlPool) {
+    const [{ default: pg }, config] = await Promise.all([import('pg'), getSqlConfig()]);
+    globalThis.hikayatSqlPool ??= new pg.Pool(config);
+  }
+  return globalThis.hikayatSqlPool;
 }
 
 function createConnection(): DatabaseConnection {

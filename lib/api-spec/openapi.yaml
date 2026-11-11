@@ -11,6 +11,66 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /stripe/checkout:
+    post:
+      operationId: createCheckout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutInput"
+      responses:
+        "200":
+          description: Stripe test checkout redirect
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [url]
+                properties:
+                  url: { type: string, format: uri }
+        "400":
+          description: Invalid checkout input
+        "401":
+          description: Sign-in required
+        "409":
+          description: Catalog changed; review the bag again
+        "503":
+          description: Payments unavailable
+  /stripe/order:
+    get:
+      operationId: getPaymentOrder
+      parameters:
+        - in: query
+          name: session_id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Owned order verified against Stripe
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentOrder"
+        "401":
+          description: Sign-in required
+        "404":
+          description: Order not found or belongs to another account
+  /stripe/webhook:
+    post:
+      operationId: processStripeWebhook
+      description: Server-to-server only. Raw body verified using the Stripe signature.
+      parameters:
+        - in: header
+          name: stripe-signature
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Verified Stripe event processed
+        "400":
+          description: Invalid signature or event
   /auth/me:
     get:
       operationId: getCurrentUser
@@ -127,6 +187,52 @@ components:
         code:
           type: string
           enum: [invalid_credentials, email_not_confirmed, weak_password, invalid_input, rate_limited, auth_unavailable, signup_failed, forbidden]
+    CheckoutInput:
+      type: object
+      additionalProperties: false
+      required: [requestId, locale, items, delivery]
+      properties:
+        requestId: { type: string, format: uuid }
+        locale: { type: string, enum: [en, ar] }
+        items:
+          type: array
+          minItems: 1
+          maxItems: 30
+          items:
+            type: object
+            additionalProperties: false
+            required: [productId, quantity]
+            properties:
+              productId: { type: string, pattern: "^[a-z0-9-]+$", maxLength: 100 }
+              quantity: { type: integer, minimum: 1, maximum: 10 }
+        delivery:
+          type: object
+          additionalProperties: false
+          required: [fullName, phone, email, city, address]
+          properties:
+            fullName: { type: string, minLength: 2, maxLength: 120 }
+            phone: { type: string, pattern: "^\\+?[0-9\\s-]{8,16}$" }
+            email: { type: string, format: email, maxLength: 254 }
+            city: { type: string, minLength: 2, maxLength: 100 }
+            address: { type: string, minLength: 5, maxLength: 500 }
+            notes: { type: string, maxLength: 300 }
+    PaymentOrder:
+      type: object
+      required: [id, status, total, currency, items]
+      properties:
+        id: { type: string, format: uuid }
+        status: { type: string, enum: [pending, paid] }
+        total: { type: number, minimum: 0 }
+        currency: { type: string, enum: [SAR] }
+        items:
+          type: array
+          items:
+            type: object
+            required: [productId, quantity, price]
+            properties:
+              productId: { type: string }
+              quantity: { type: integer, minimum: 1 }
+              price: { type: number, minimum: 0 }
     HealthStatus:
       type: object
       properties:
